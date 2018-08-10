@@ -36,3 +36,14 @@ jspm_packages
 
 # Optional REPL history
 .node_repl_history
+
+# IDE Files
+.history/
+.vscode/
+
+# System Files
+*.DS_Store
+*Thumbs.db
+
+# Builds and distros
+dist/

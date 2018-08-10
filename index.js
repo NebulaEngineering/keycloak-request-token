@@ -19,12 +19,12 @@ const tokenUrl = 'protocol/openid-connect/token';
   @param {string} settings.password - The password to login to the keycloak server - ex: *****
   @param {string} settings.grant_type - the type of authentication mechanism - ex: password,
   @param {string} settings.client_id - the id of the client that is registered with Keycloak to connect to - ex: admin-cli
-  @param {string} settings.realmName - the name of the realm to login to - defaults to 'masterg'
+  @param {string} [settings.realmName=master] - the name of the realm to login to - defaults to 'master'
   @returns {Promise} A promise that will resolve with the Access Token String.
   @instance
   @example
 
-  const tokenRequester = require('keycloak-request-token')
+  const {getToken, refreshToken} = require('keycloak-request-token')
   const baseUrl = 'http://127.0.0.1:8080/auth'
   const settings = {
       username: 'admin',
@@ -33,7 +33,7 @@ const tokenUrl = 'protocol/openid-connect/token';
       client_id: 'admin-cli'
   }
 
-  tokenRequester(baseUrl, settings)
+  getToken(baseUrl, settings)
     .then((token) => {
       console.log(token)
     }).catch((err) => {
@@ -41,6 +41,49 @@ const tokenUrl = 'protocol/openid-connect/token';
     })
  */
 function getToken (baseUrl, settings) {
+  return requestToken(baseUrl, settings);
+}
+
+/**
+  Refreshs the Keycloak Access Token with the refresh token
+  @param {string} baseUrl - The baseurl for the Keycloak server - ex: http://localhost:8080/auth,
+  @param {object} settings - an object containing the settings
+  @param {string} settings.refresh_token - The refresh token that will be used to get the new access token
+  @param {string} settings.grant_type - the type of authentication mechanism - ex: refresh_token,
+  @param {string} settings.client_id - the id of the client that is registered with Keycloak to connect to - ex: admin-cli
+  @param {string} [settings.realmName=master] - the name of the realm to login to - defaults to 'master'
+  @returns {Promise} A promise that will resolve with the Access Token String.
+  @instance
+  @example
+
+  const {getToken, refreshToken} = require('keycloak-request-token')
+  const baseUrl = 'http://127.0.0.1:8080/auth'
+  const settings = {
+      realmName: 'master',
+      refresh_token: 'eyJhbGciOiJSUzI1NiIsInR5cCIgOiAiSldUIiwia2l ...',
+      grant_type: 'password',
+      client_id: 'admin-cli'
+  }
+
+  refreshToken(baseUrl, settings)
+    .then((token) => {
+      console.log(token)
+    }).catch((err) => {
+      console.log('err', err)
+    })
+ */
+function refreshToken (baseUrl, settings) {
+  return requestToken(baseUrl, settings);
+}
+
+/**
+  Requests a new Keycloak Access Token according to the settings
+  @param {string} baseUrl - The baseurl for the Keycloak server - ex: http://localhost:8080/auth,
+  @param {object} settings - an object containing the settings
+  @returns {Promise} A promise that will resolve with the Access Token String.
+  @instance
+ */
+function requestToken(baseUrl, settings) {
   return new Promise((resolve, reject) => {
     settings = settings || {};
 
@@ -74,9 +117,9 @@ function getToken (baseUrl, settings) {
             return reject(parsedData);
           }
 
-          const token = parsedData.access_token;
+          const token = parsedData;
           resolve(token);
-        } catch (e) {
+        } catch(e) {
           reject(e);
         }
       });
@@ -91,4 +134,4 @@ function getToken (baseUrl, settings) {
   });
 }
 
-module.exports = getToken;
+module.exports = {getToken, refreshToken};
